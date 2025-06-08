@@ -1,10 +1,13 @@
 import os
 import matplotlib.pyplot as plt
+import torch
 
 def q1_plot_figs(objectives, test_loss_per_epoch, figs_dir):
-    var_loss_batch = [v for v, _, _ in objectives]
-    inv_loss_batch = [i for _, i, _ in objectives]
-    cov_loss_batch = [c for _, _, c in objectives]
+    var_loss_batch = [v.item() if torch.is_tensor(v) else v for v, _, _ in objectives]
+    inv_loss_batch = [i.item() if torch.is_tensor(i) else i for _, i, _ in objectives]
+    cov_loss_batch = [c.item() if torch.is_tensor(c) else c for _, _, c in objectives]
+    test_loss_per_epoch = [t.item() if torch.is_tensor(t) else t for t in test_loss_per_epoch]
+
 
     epoch_count = len(test_loss_per_epoch)
     batch_count = len(objectives)
