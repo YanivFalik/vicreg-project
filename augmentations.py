@@ -28,8 +28,8 @@ class AugmentTwiceDataset(torch.utils.data.Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        img, _ = self.base_dataset[idx]  
-        return self.transform(img), self.transform(img)
+        img, label = self.base_dataset[idx]  
+        return self.transform(img), self.transform(img), label
 
 
 def get_cifar_dataset():

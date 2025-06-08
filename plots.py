@@ -1,6 +1,10 @@
 import os
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 import torch
+import numpy as np
+
 
 def q1_plot_figs(objectives, test_loss_per_epoch, figs_dir):
     var_loss_batch = [v.item() if torch.is_tensor(v) else v for v, _, _ in objectives]
@@ -38,3 +42,39 @@ def q1_plot_figs(objectives, test_loss_per_epoch, figs_dir):
     plt.tight_layout()
     plt.savefig(os.path.join(figs_dir, "total_test_loss.png"))
     plt.close()
+
+
+def project_pca(tensor: torch.Tensor, n_components=2):
+    pca = PCA(n_components=n_components)
+    projected = pca.fit_transform(tensor.numpy())
+    return projected
+
+def project_tsne(tensor: torch.Tensor, n_components=2, perplexity=30, random_state=0):
+    tsne = TSNE(n_components=n_components, perplexity=perplexity, random_state=random_state)
+    projected = tsne.fit_transform(tensor.numpy())
+    return projected
+
+def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir):
+    labels = labels.numpy()
+    plt.figure(figsize=(8, 6))
+    
+    num_classes = len(np.unique(labels))
+    for label in range(num_classes):
+        idxs = labels == label
+        plt.scatter(proj_2d[idxs, 0], proj_2d[idxs, 1], label=f"Class {label}", alpha=0.6, s=20)
+
+    plt.title(title)
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
+    plt.legend(loc='best', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
+    plt.tight_layout()
+
+    plt.savefig(os.path.join(figs_dir, f"{title}.png"))
+
+
+def q2_plot_figs(encoding: torch.Tensor, labels: torch.Tensor, figs_dir: str):
+    pca_projection = project_pca(encoding)
+    tsne_projection = project_tsne(encoding)
+
+    plot_2d_projection(pca_projection, labels, "PCA_projection")
+    plot_2d_projection(tsne_projection, labels, "T-SNE_projection")

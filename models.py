@@ -51,7 +51,7 @@ def test_loss(e: Encoder, p: Projector, test_X: DataLoader, epoch_num: int, devi
         with torch.no_grad():
             num_of_batches = 0
             total_test_loss = 0.0
-            for _, (X_aug1, X_aug2) in enumerate(test_X):
+            for _, (X_aug1, X_aug2, _) in enumerate(test_X):
                 X_aug1 = X_aug1.to(device)
                 X_aug2 = X_aug2.to(device)
                 z_1, z_2 = train_forward(e, p, X_aug1), train_forward(e, p, X_aug2)
@@ -70,8 +70,8 @@ def save_models(params_dir: str, e: Encoder, p: Projector):
     print(f"Models saved:\n - Encoder: {encoder_path}\n - Projector: {projector_path}")
 
 def load_models(params_dir: str, device, D=hp.encoded_dim, proj_dim=hp.projected_dim):
-    encoder = Encoder(D=D, device=device)
-    projector = Projector(D=D, proj_dim=proj_dim)
+    encoder = Encoder(D=D)
+    projector = Projector(encoded_dim=D, proj_dim=proj_dim)
     encoder_path = os.path.join(params_dir, "encoder.pth")
     projector_path = os.path.join(params_dir, "projector.pth")
     encoder.load_state_dict(torch.load(encoder_path, map_location=device))

@@ -11,10 +11,32 @@ from models import Encoder, Projector, train_forward, test_loss, save_models, lo
 from losses import vicreg_loss
 import hyperparams as hp
 from augmentations import get_cifar_dataset, AugmentTwiceDataset
-from plots import q1_plot_figs
+from plots import q1_plot_figs, q2_plot_figs
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
+
+def q2(e: Encoder, test_X: DataLoader, figs_dir: str):
+    e.eval()
+    all_encodings = []
+    all_labels = []
+    for _, (X_aug1, X_aug2, label) in enumerate(test_X):
+        X_aug1 = X_aug1.to(device)
+        X_aug2 = X_aug2.to(device)
+        y1 = e.encode(X_aug1).detach().cpu()
+        y2 = e.encode(X_aug2).detach().cpu()
+        all_encodings.append(y1)
+        all_encodings.append(y2) 
+
+        # all labels will have 2 copies of the encoding of the same batch (aug1, aug2) 
+        # therefore each label batch should have 2 copies 2 
+        label = label.cpu()
+        all_labels.append(label)
+        all_labels.append(label)
+    
+    encoding_tensor = torch.cat(all_encodings, dim=0)  
+    labels_tensor = torch.cat(all_labels, dim=0)     
+    q2_plot_figs(encoding_tensor, labels_tensor, figs_dir)
 
 def num_of_epoch(debug: bool):
         if debug:
@@ -35,7 +57,7 @@ def q1(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, fi
     for epoch_num in range(1, epochs + 1):
         encoder.train()
         projector.train()
-        for batch_idx, (X_aug1, X_aug2) in tqdm(enumerate(train_X)):
+        for batch_idx, (X_aug1, X_aug2, _) in tqdm(enumerate(train_X)):
             X_aug1 = X_aug1.to(device)
             X_aug2 = X_aug2.to(device)
             z_1, z_2 = train_forward(encoder, projector, X_aug1), train_forward(encoder, projector, X_aug2)
@@ -65,7 +87,7 @@ def main(debug: bool):
     q1(train_X, test_X, params_dir=params_dir, figs_dir=figs_dir, debug=debug)
 
     e, p = load_models(params_dir, device)
-
+    q2(e, test_X, figs_dir)
     
 
 if __name__ == "__main__":
