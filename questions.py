@@ -53,7 +53,6 @@ def q1(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, fi
 
 
 def fs_operations(params_dir, figs_dir):
-    os.chdir("ex3_files/VICReg")
     os.makedirs(params_dir, exist_ok=True)
     os.makedirs(figs_dir, exist_ok=True)
 
