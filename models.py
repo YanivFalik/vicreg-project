@@ -54,7 +54,7 @@ def test_loss(e: Encoder, p: Projector, test_X: DataLoader, epoch_num: int, devi
             for _, (X_aug1, X_aug2) in enumerate(test_X):
                 X_aug1.to(device)
                 X_aug2.to(device)
-                z_1, z_2 = train_forward(X_aug1), train_forward(X_aug2)
+                z_1, z_2 = train_forward(e, p, X_aug1), train_forward(e, p, X_aug2)
                 total_batch_loss, _ = vicreg_loss(z_1, z_2)
                 total_test_loss += total_batch_loss
                 num_of_batches += 1
