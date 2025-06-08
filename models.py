@@ -8,7 +8,7 @@ import hyperparams as hp
 from losses import vicreg_loss
 
 class Encoder(nn.Module):
-    def __init__(self,  device, D=hp.encoded_dim):
+    def __init__(self, D=hp.encoded_dim):
         super(Encoder, self).__init__()
         self.resnet = resnet18(weights=None)
         self.resnet.conv1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=1)
@@ -26,7 +26,7 @@ class Encoder(nn.Module):
 
 
 class Projector(nn.Module):
-    def __init__(self, device, encoded_dim = hp.encoded_dim, proj_dim=hp.projected_dim):
+    def __init__(self, encoded_dim = hp.encoded_dim, proj_dim=hp.projected_dim):
         super(Projector, self).__init__()
         self.model = nn.Sequential(nn.Linear(encoded_dim, proj_dim),
                                    nn.BatchNorm1d(proj_dim),
