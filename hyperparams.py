@@ -1,0 +1,13 @@
+gamma = 1
+epsilon = 1e-4
+lambda_letter = 25
+miu = 25
+upsilon = 1
+projected_dim = 512
+encoded_dim = 128
+batch_size = 256
+learning_rate = 3e-4
+betas = (0.9, 0.999)
+weight_decay = 1e-6
+epoch_all = 30
+epoch_debug = 5
