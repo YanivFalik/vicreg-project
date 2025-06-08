@@ -10,7 +10,7 @@ from losses import vicreg_loss
 class Encoder(nn.Module):
     def __init__(self,  device, D=hp.encoded_dim):
         super(Encoder, self).__init__()
-        self.resnet = resnet18(weights=None).to(device)
+        self.resnet = resnet18(weights=None)
         self.resnet.conv1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=1)
         self.resnet.maxpool = nn.Identity()
         self.resnet.fc = nn.Linear(hp.projected_dim, hp.projected_dim)
@@ -45,13 +45,15 @@ def train_forward(e: Encoder, p: Projector, x):
     z = p(y)
     return z
 
-def test_loss(e: Encoder, p: Projector, test_X: DataLoader, epoch_num: int):
+def test_loss(e: Encoder, p: Projector, test_X: DataLoader, epoch_num: int, device):
         e.eval()
         p.eval()
         with torch.no_grad():
             num_of_batches = 0
             total_test_loss = 0.0
             for _, (X_aug1, X_aug2) in enumerate(test_X):
+                X_aug1.to(device)
+                X_aug2.to(device)
                 z_1, z_2 = train_forward(X_aug1), train_forward(X_aug2)
                 total_batch_loss, _ = vicreg_loss(z_1, z_2)
                 total_test_loss += total_batch_loss

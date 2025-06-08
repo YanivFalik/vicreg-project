@@ -19,6 +19,8 @@ def covariance_loss(z: torch.Tensor):
     return loss
 
 def variance_loss(z: torch.Tensor):
+    gamma = torch.tensor(hp.gamma, device=z.device)
+    epsilon = torch.tensor(hp.epsilon, device=z.device)
     std = torch.sqrt(z.var(dim=0, unbiased=True) + hp.epsilon)
     hinge = torch.max(torch.zeros_like(std), hp.gamma - std)
     return hinge.mean()

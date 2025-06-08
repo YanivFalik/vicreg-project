@@ -25,8 +25,8 @@ def num_of_epoch(debug: bool):
 def q1(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, figs_dir: str, save_results = True):  
     epochs = num_of_epoch(debug)
 
-    encoder = Encoder(device)
-    projector = Projector(device)
+    encoder = Encoder().to(device)
+    projector = Projector().to(device)
     optimizer = optim.Adam(params = chain(encoder.parameters(), projector.parameters()), 
                            lr=hp.learning_rate, betas=hp.betas, weight_decay=hp.weight_decay)
 
@@ -36,6 +36,8 @@ def q1(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, fi
         encoder.train()
         projector.train()
         for batch_idx, (X_aug1, X_aug2) in tqdm(enumerate(train_X)):
+            X_aug1 = X_aug1.to(device)
+            X_aug2 = X_aug2.to(device)
             z_1, z_2 = train_forward(encoder, projector, X_aug1), train_forward(encoder, projector, X_aug2)
             total_batch_loss, batch_objective_loss = vicreg_loss(z_1, z_2)
             objectives.append(batch_objective_loss)
@@ -44,7 +46,7 @@ def q1(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, fi
             total_batch_loss.backward()
             optimizer.step()
         
-        test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num))
+        test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
     if save_results:
         save_models(params_dir, encoder, projector)
     q1_plot_figs(objectives, test_loss_per_epoch, figs_dir)
