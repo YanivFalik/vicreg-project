@@ -28,7 +28,8 @@ def q5(e: Encoder):
     raw_train, raw_loader = raw_loader()
 
 def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoader,debug: bool, params_dir: str, figs_dir: str):
-    epochs = num_of_epoch(debug)
+    # i limited the number of epochs because from very early epochs we can see the both objectives collapse to ~0 (no need 30 epochs to show it)
+    epochs = 10
 
     encoder = Encoder().to(device)
     projector = Projector().to(device)
