@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
 # my own code
@@ -26,24 +26,29 @@ def num_of_epoch(debug: bool):
         else:
             return hp.epoch_all
 
-def get_index_pairs(q1_encoder: Encoder, raw):
+def get_index_pairs(q1_encoder: Encoder, raw_loader):
     q1_encoder.eval()
     q1_encoder.to(device)
+
     all_encoded = []
     with torch.no_grad():
-        for batch_i, (x, _) in tqdm(enumerate(raw)):
+        for x, _ in tqdm(raw_loader):
             x = x.to(device)
             z = q1_encoder(x)
             all_encoded.append(z.cpu())
     all_encoded = torch.cat(all_encoded, dim=0).numpy()
     N = all_encoded.shape[0]
 
-    pair_distance = pairwise_distances(all_encoded, metric='euclidean')
+    knn = NearestNeighbors(n_neighbors=4, metric='euclidean') 
+    knn.fit(all_encoded)
+    distances, neighbors = knn.kneighbors(all_encoded)
+
+    # Create (i, j) pairs with j randomly picked among 3 nearest (excluding i)
     index_pairs = []
-    for i in tqdm(range(N)):
-        nearest = np.argsort(pair_distance[i])[1:4]
-        j = random.choice(nearest)
+    for i in range(N):
+        j = random.choice(neighbors[i][1:]) 
         index_pairs.append((i, j))
+
     return index_pairs
 
 def q5(encoder: Encoder, params_dir, figs_dir, debug):
