@@ -91,6 +91,6 @@ def q3_test_accuracy(test_acc_per_epoch, figs_dir, filename="test_accuracy.png",
     plt.title(f"Test Accuracy per Epoch (Max: {max_acc:.2f} at Epoch {max_epoch})")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(figs_dir, f"{q}_{filename}"))
+    plt.savefig(os.path.join(figs_dir, f"q{str(q)}_{filename}"))
     plt.close()
     print(f"Test accuracy figure saved to: {os.path.join(figs_dir, filename)}")

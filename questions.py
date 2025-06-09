@@ -89,7 +89,7 @@ def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: st
             optimizer.step()
         test_acc_per_epoch.append(probe_test_acc(encoder, probe, test_X, device, e))
     save_linear_probe(params_dir, probe, q)
-    q3_test_accuracy(test_acc_per_epoch, figs_dir, q)
+    q3_test_accuracy(test_acc_per_epoch, figs_dir, "test_accuracy.png", q)
 
 def q2(e: Encoder, test_X: DataLoader, figs_dir: str, q=1):
     e.eval()
