@@ -77,10 +77,16 @@ def get_cifar_dataset_test_transform():
 
 def raw_loader():
     # no transform needed for the pics
-    train_dataset = datasets.CIFAR10(root="./cifar_data", train=True, download=True, transform=to_tensor_transform)
-    test_dataset = datasets.CIFAR10(root="./cifar_data", train=False, download=True, transform=to_tensor_transform)
+    train_dataset = datasets.CIFAR10(root="./cifar_data", train=True, download=True, transform=test_transform)
+    test_dataset = datasets.CIFAR10(root="./cifar_data", train=False, download=True, transform=test_transform)
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
     
     return train_loader, test_loader
+
+def get_pairwise_dataloader(pairs):
+    base_dataset = datasets.CIFAR10(root="./cifar_data", train=True, download=True, transform=None)
+    paired_dataset = PairedIndexDataset(base_dataset=base_dataset, index_pairs=pairs, transform=test_transform)
+    paired_dataloader = DataLoader(paired_dataset, batch_size, shuffle=True)
+    return paired_dataloader

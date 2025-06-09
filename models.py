@@ -94,12 +94,8 @@ def probe_test_acc(encoder: Encoder, probe: LinearProbe, test_X: DataLoader, dev
     return acc
 
 def save_models(params_dir: str, e: Encoder, p: Projector, q=1):
-    if (q == 1):
-        encoder_path = os.path.join(params_dir, "encoder.pth")
-        projector_path = os.path.join(params_dir, "projector.pth")
-    if (q == 4):
-        encoder_path = os.path.join(params_dir, "q4_encoder.pth")
-        projector_path = os.path.join(params_dir, "q4_projector.pth")
+    encoder_path = os.path.join(params_dir, f"q{q}_encoder.pth")
+    projector_path = os.path.join(params_dir, f"q{q}_projector.pth")
     torch.save(e.state_dict(), encoder_path)
     torch.save(p.state_dict(), projector_path)
     print(f"Models saved:\n - Encoder: {encoder_path}\n - Projector: {projector_path}")
@@ -107,12 +103,8 @@ def save_models(params_dir: str, e: Encoder, p: Projector, q=1):
 def load_models(params_dir: str, device, D=hp.encoded_dim, proj_dim=hp.projected_dim, q=1):
     encoder = Encoder(D=D)
     projector = Projector(encoded_dim=D, proj_dim=proj_dim)
-    if (q == 1):
-        encoder_path = os.path.join(params_dir, "encoder.pth")
-        projector_path = os.path.join(params_dir, "projector.pth")
-    if (q == 4):
-        encoder_path = os.path.join(params_dir, "q4_encoder.pth")
-        projector_path = os.path.join(params_dir, "q4_projector.pth")
+    encoder_path = os.path.join(params_dir, f"q{q}_encoder.pth")
+    projector_path = os.path.join(params_dir, f"q{q}_projector.pth")
     encoder.load_state_dict(torch.load(encoder_path, map_location=device))
     projector.load_state_dict(torch.load(projector_path, map_location=device))
     encoder.to(device)

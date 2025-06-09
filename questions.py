@@ -1,17 +1,20 @@
 # permitted packages
 import os
+import random
 from itertools import chain
 import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from sklearn.metrics.pairwise import pairwise_distances
+import numpy as np
 
 # my own code
 from models import Encoder, Projector, LinearProbe, train_forward, test_loss, probe_test_acc, save_models, save_linear_probe, load_models
 from losses import vicreg_loss, q4_loss
 import hyperparams as hp
-from augmentations import get_cifar_dataset, get_cifar_dataset_test_transform
+from augmentations import get_cifar_dataset, get_cifar_dataset_test_transform, raw_loader, get_pairwise_dataloader
 from plots import q1_plot_figs, q2_plot_figs, q3_test_accuracy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -23,9 +26,53 @@ def num_of_epoch(debug: bool):
         else:
             return hp.epoch_all
 
-#the encoder is the trained one from q1
-def q5(e: Encoder):
-    raw_train, raw_loader = raw_loader()
+def get_index_pairs(q1_encoder: Encoder, raw):
+    q1_encoder.eval()
+    q1_encoder.to(device)
+    all_encoded = []
+    with torch.no_grad():
+        for batch_i, (x, _) in tqdm(enumerate(raw)):
+            x = x.to(device)
+            z = q1_encoder(x)
+            all_encoded.append(z.cpu())
+    all_encoded = torch.cat(all_encoded, dim=0).numpy()
+    N = all_encoded.shape[0]
+
+    pair_distance = pairwise_distances(all_encoded, metric='euclidean')
+    index_pairs = []
+    for i in tqdm(range(N)):
+        nearest = np.argsort(pair_distance[i])[1:4]
+        j = random.choice(nearest)
+        index_pairs.append((i, j))
+    return index_pairs
+
+def q5(encoder: Encoder, params_dir, figs_dir, debug):
+    epochs = 3
+    raw_train, raw_test = raw_loader()
+    train_X, test_X = get_pairwise_dataloader(get_index_pairs(encoder, raw_train)), get_pairwise_dataloader(get_index_pairs(encoder, raw_test))
+    encoder = Encoder().to(device)
+    projector = Projector().to(device)
+    optimizer = optim.Adam(params = chain(encoder.parameters(), projector.parameters()), 
+                           lr=hp.learning_rate, betas=hp.betas, weight_decay=hp.weight_decay)
+
+    objectives = []
+    test_loss_per_epoch = []
+    for epoch_num in range(1, epochs + 1):
+        encoder.train()
+        projector.train()
+        for batch_idx, (X_aug1, X_aug2, _) in tqdm(enumerate(train_X)):
+            X_aug1 = X_aug1.to(device)
+            X_aug2 = X_aug2.to(device)
+            z_1, z_2 = train_forward(encoder, projector, X_aug1), train_forward(encoder, projector, X_aug2)
+            total_batch_loss, batch_objective_loss = vicreg_loss(z_1, z_2)
+            objectives.append(batch_objective_loss)
+
+            optimizer.zero_grad()
+            total_batch_loss.backward()
+            optimizer.step()
+        test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
+    save_models(params_dir, encoder, projector, q=5)
+    q3(encoder, train_X, test_X, params_dir, figs_dir, debug, q=5)
 
 def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoader,debug: bool, params_dir: str, figs_dir: str):
     # i limited the number of epochs because from very early epochs we can see the both objectives collapse to ~0 (no need 30 epochs to show it)
@@ -53,7 +100,6 @@ def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoad
             optimizer.step()
         
         test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
-    # print(f"Q4: Minimal test loss: {min(test_loss_per_epoch):.4f}")
     save_models(params_dir, encoder, projector, q=4)
     q2(encoder, test_X, figs_dir, q=4)
     q3(encoder, train_X_test_transform, test_X, params_dir, figs_dir, debug, q=4)
@@ -156,14 +202,14 @@ def main(debug: bool):
     train_X, test_X = get_cifar_dataset()
     # q1(train_X, test_X, params_dir=params_dir, figs_dir=figs_dir, debug=debug)
 
-    # e, _ = load_models(params_dir, device, q=1)
+    e, _ = load_models(params_dir, device, q=1)
     # q2(e, test_X, figs_dir)
 
     train_X_test_transform, _ = get_cifar_dataset_test_transform()
     # q3(e, train_X_test_transform, test_X, params_dir, figs_dir, debug=False)
     
-    q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
-    # q5(e)
+    # q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
+    q5(e, params_dir, figs_dir, debug)
 
 if __name__ == "__main__":
     main(debug=True)
