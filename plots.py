@@ -76,8 +76,8 @@ def q2_plot_figs(encoding: torch.Tensor, labels: torch.Tensor, figs_dir: str, q=
     pca_projection = project_pca(encoding)
     tsne_projection = project_tsne(encoding)
 
-    plot_2d_projection(pca_projection, labels, "PCA_projection", q)
-    plot_2d_projection(tsne_projection, labels, "T-SNE_projection", q)
+    plot_2d_projection(pca_projection, labels, "PCA_projection", figs_dir, q)
+    plot_2d_projection(tsne_projection, labels, "T-SNE_projection", figs_dir, q)
 
 def q3_test_accuracy(test_acc_per_epoch, figs_dir, filename="test_accuracy.png", q=1):
     epochs = list(range(1, len(test_acc_per_epoch) + 1))
