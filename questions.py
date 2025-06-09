@@ -53,7 +53,7 @@ def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoad
             optimizer.step()
         
         test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
-    print(f"Q4: Minimal test loss: {min(test_loss_per_epoch):.4f}")
+    # print(f"Q4: Minimal test loss: {min(test_loss_per_epoch):.4f}")
     save_models(params_dir, encoder, projector, q=4)
     q2(encoder, test_X, figs_dir, q=4)
     q3(encoder, train_X_test_transform, test_X, params_dir, figs_dir, debug, q=4)
