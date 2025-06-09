@@ -65,10 +65,10 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
     for epoch_num in range(1, epochs + 1):
         encoder.train()
         projector.train()
-        for batch_idx, (X_aug1, X_aug2, _) in tqdm(enumerate(train_X)):
-            X_aug1 = X_aug1.to(device)
-            X_aug2 = X_aug2.to(device)
-            z_1, z_2 = train_forward(encoder, projector, X_aug1), train_forward(encoder, projector, X_aug2)
+        for batch_idx, (x1, x2, _) in tqdm(enumerate(train_X)):
+            x1 = x1.to(device)
+            x2 = x2.to(device)
+            z_1, z_2 = train_forward(encoder, projector, x1), train_forward(encoder, projector, x2)
             total_batch_loss, batch_objective_loss = vicreg_loss(z_1, z_2)
             objectives.append(batch_objective_loss)
 

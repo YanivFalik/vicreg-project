@@ -54,7 +54,7 @@ class PairedIndexDataset(torch.utils.data.Dataset):
             img1 = self.transform(img1)
             img2 = self.transform(img2)
 
-        return img1, label1, img2, label2
+        return img1, img2, label1
 
 
 def get_cifar_dataset():
