@@ -11,7 +11,7 @@ from tqdm import tqdm
 from models import Encoder, Projector, LinearProbe, train_forward, test_loss, probe_test_acc, save_models, save_linear_probe, load_models
 from losses import vicreg_loss, q4_loss
 import hyperparams as hp
-from augmentations import get_cifar_dataset, AugmentTwiceDataset
+from augmentations import get_cifar_dataset, get_cifar_dataset_test_transform, raw_loader
 from plots import q1_plot_figs, q2_plot_figs, q3_test_accuracy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -23,7 +23,11 @@ def num_of_epoch(debug: bool):
         else:
             return hp.epoch_all
 
-def q4(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, figs_dir: str):
+#the encoder is the trained one from q1
+def q5(e: Encoder):
+    raw_train, raw_loader = raw_loader()
+
+def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoader,debug: bool, params_dir: str, figs_dir: str):
     epochs = num_of_epoch(debug)
 
     encoder = Encoder().to(device)
@@ -51,9 +55,9 @@ def q4(train_X: DataLoader, test_X: DataLoader, debug: bool, params_dir: str, fi
     print(f"Q4: Minimal test loss: {min(test_loss_per_epoch):.4f}")
     save_models(params_dir, encoder, projector, q=4)
     q2(encoder, test_X, figs_dir, q=4)
-    q3(encoder, train_X, test_X, params_dir, figs_dir, debug, q=4)
+    q3(encoder, train_X_test_transform, test_X, params_dir, figs_dir, debug, q=4)
 
-
+# here train_X will have the test transform (no need the train aug because encoder already trained)
 def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: str, figs_dir: str, debug: bool, q=1):
     epochs = num_of_epoch(debug)
     
@@ -148,13 +152,16 @@ def main(debug: bool):
     fs_operations(params_dir, figs_dir)
     
     train_X, test_X = get_cifar_dataset()
-    q1(train_X, test_X, params_dir=params_dir, figs_dir=figs_dir, debug=debug)
+    # q1(train_X, test_X, params_dir=params_dir, figs_dir=figs_dir, debug=debug)
 
-    e, p = load_models(params_dir, device)
+    e, _ = load_models(params_dir, device, q=1)
     q2(e, test_X, figs_dir)
-    q3(e, train_X, test_X, params_dir, figs_dir, debug=False)
+
+    train_X_test_transform, _ = get_cifar_dataset_test_transform()
+    q3(e, train_X_test_transform, test_X, params_dir, figs_dir, debug=False)
     
-    q4(train_X, test_X)
+    # q4(train_X, test_X, train_X_test_transform)
+    # q5(e)
 
 if __name__ == "__main__":
     main(debug=True)
