@@ -54,7 +54,7 @@ def project_tsne(tensor: torch.Tensor, n_components=2, perplexity=30, random_sta
     projected = tsne.fit_transform(tensor.numpy())
     return projected
 
-def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir, q):
+def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir, q=1):
     labels = labels.numpy()
     plt.figure(figsize=(8, 6))
     
@@ -63,13 +63,13 @@ def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir, q):
         idxs = labels == label
         plt.scatter(proj_2d[idxs, 0], proj_2d[idxs, 1], label=f"Class {label}", alpha=0.6, s=20)
 
-    plt.title(f"{q}: {title}")
+    plt.title(f"q{q}_{title}")
     plt.xlabel("Component 1")
     plt.ylabel("Component 2")
     plt.legend(loc='best', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
     plt.tight_layout()
 
-    plt.savefig(os.path.join(figs_dir, f"{title}.png"))
+    plt.savefig(os.path.join(figs_dir, f"q{q}_{title}.png"))
 
 
 def q2_plot_figs(encoding: torch.Tensor, labels: torch.Tensor, figs_dir: str, q=1):
