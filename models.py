@@ -77,7 +77,7 @@ def probe_test_acc(encoder: Encoder, probe: LinearProbe, test_X: DataLoader, dev
     correct = 0
     total = 0
     criterion = torch.nn.CrossEntropyLoss()
-    total_loss += 0
+    total_loss = 0
 
     with torch.no_grad():
         for (x, _, labels) in enumerate(test_X):
