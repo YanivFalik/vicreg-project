@@ -45,6 +45,7 @@ def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoad
             X_aug2 = X_aug2.to(device)
             z_1, z_2 = train_forward(encoder, projector, X_aug1), train_forward(encoder, projector, X_aug2)
             total_batch_loss, batch_objective_loss = q4_loss(z_1, z_2)
+            print(f"batch_objective_loss: {batch_objective_loss}")
             objectives.append(batch_objective_loss)
 
             optimizer.zero_grad()
