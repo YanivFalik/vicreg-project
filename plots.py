@@ -69,7 +69,7 @@ def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir, q=1):
     plt.legend(loc='best', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
     plt.tight_layout()
 
-    plt.savefig(os.path.join(figs_dir, f"q{q}_{title}.png"))
+    plt.savefig(os.path.join(figs_dir, f"q{str(q)}_{title}.png"))
 
 
 def q2_plot_figs(encoding: torch.Tensor, labels: torch.Tensor, figs_dir: str, q=1):
