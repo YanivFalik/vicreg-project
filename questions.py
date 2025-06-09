@@ -155,13 +155,13 @@ def main(debug: bool):
     train_X, test_X = get_cifar_dataset()
     # q1(train_X, test_X, params_dir=params_dir, figs_dir=figs_dir, debug=debug)
 
-    e, _ = load_models(params_dir, device, q=1)
+    # e, _ = load_models(params_dir, device, q=1)
     # q2(e, test_X, figs_dir)
 
     train_X_test_transform, _ = get_cifar_dataset_test_transform()
     # q3(e, train_X_test_transform, test_X, params_dir, figs_dir, debug=False)
     
-    q4(train_X, test_X, train_X_test_transform)
+    q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
     # q5(e)
 
 if __name__ == "__main__":
