@@ -54,7 +54,7 @@ def project_tsne(tensor: torch.Tensor, n_components=2, perplexity=30, random_sta
     projected = tsne.fit_transform(tensor.numpy())
     return projected
 
-def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir):
+def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir, q):
     labels = labels.numpy()
     plt.figure(figsize=(8, 6))
     
@@ -63,7 +63,7 @@ def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir):
         idxs = labels == label
         plt.scatter(proj_2d[idxs, 0], proj_2d[idxs, 1], label=f"Class {label}", alpha=0.6, s=20)
 
-    plt.title(title)
+    plt.title(f"{q}: {title}")
     plt.xlabel("Component 1")
     plt.ylabel("Component 2")
     plt.legend(loc='best', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
@@ -72,9 +72,25 @@ def plot_2d_projection(proj_2d, labels: torch.Tensor, title, figs_dir):
     plt.savefig(os.path.join(figs_dir, f"{title}.png"))
 
 
-def q2_plot_figs(encoding: torch.Tensor, labels: torch.Tensor, figs_dir: str):
+def q2_plot_figs(encoding: torch.Tensor, labels: torch.Tensor, figs_dir: str, q=1):
     pca_projection = project_pca(encoding)
     tsne_projection = project_tsne(encoding)
 
-    plot_2d_projection(pca_projection, labels, "PCA_projection")
-    plot_2d_projection(tsne_projection, labels, "T-SNE_projection")
+    plot_2d_projection(pca_projection, labels, "PCA_projection", q)
+    plot_2d_projection(tsne_projection, labels, "T-SNE_projection", q)
+
+def q3_test_accuracy(test_acc_per_epoch, figs_dir, filename="test_accuracy.png", q=1):
+    epochs = list(range(1, len(test_acc_per_epoch) + 1))
+    max_acc = max(test_acc_per_epoch)
+    max_epoch = test_acc_per_epoch.index(max_acc) + 1  
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(epochs, test_acc_per_epoch, marker='o', label="Test Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title(f"Test Accuracy per Epoch (Max: {max_acc:.2f} at Epoch {max_epoch})")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(figs_dir, f"{q}_{filename}"))
+    plt.close()
+    print(f"Test accuracy figure saved to: {os.path.join(figs_dir, filename)}")

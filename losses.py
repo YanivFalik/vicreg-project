@@ -31,3 +31,10 @@ def vicreg_loss(z_1, z_2):
     cov_loss = covariance_loss(z_1) + covariance_loss(z_2)
     total_loss = hp.lambda_letter * inv_loss + hp.miu * var_loss + hp.upsilon * cov_loss
     return total_loss, (var_loss, inv_loss, cov_loss)
+
+def q4_loss(z_1, z_2):
+    inv_loss = invariance_loss(z_1, z_2)
+    cov_loss = covariance_loss(z_1) + covariance_loss(z_2)
+    total_loss = hp.lambda_letter * inv_loss + hp.upsilon * cov_loss
+    return total_loss, (inv_loss, cov_loss)
+    

@@ -3,9 +3,18 @@ import torch
 import torch.nn as nn
 from torchvision.models import resnet18
 from torch.utils.data import DataLoader
-
+import torch.nn.functional as F
 import hyperparams as hp
 from losses import vicreg_loss
+
+
+class LinearProbe(nn.Module):
+    def __init__(self, encoded_dim, num_classes=10):
+        super(LinearProbe, self).__init__()
+        self.fc = nn.Linear(encoded_dim, num_classes)
+
+    def forward(self, x):
+        return self.fc(x)
 
 class Encoder(nn.Module):
     def __init__(self, D=hp.encoded_dim):
@@ -23,7 +32,6 @@ class Encoder(nn.Module):
 
     def encode(self, x):
         return self.forward(x)
-
 
 class Projector(nn.Module):
     def __init__(self, encoded_dim = hp.encoded_dim, proj_dim=hp.projected_dim):
@@ -62,21 +70,64 @@ def test_loss(e: Encoder, p: Projector, test_X: DataLoader, epoch_num: int, devi
             print(f"Epoch {epoch_num:02d} | Loss: {test_loss_per_sample:.4f}")
             return 
 
-def save_models(params_dir: str, e: Encoder, p: Projector):
-    encoder_path = os.path.join(params_dir, "encoder.pth")
-    projector_path = os.path.join(params_dir, "projector.pth")
+def probe_test_acc(encoder: Encoder, probe: LinearProbe, test_X: DataLoader, device, e):
+    encoder.eval()
+    probe.eval()
+
+    correct = 0
+    total = 0
+    criterion = torch.nn.CrossEntropyLoss()
+    total_loss += 0
+
+    with torch.no_grad():
+        for (x, _, labels) in enumerate(test_X):
+            x = x.to(device)
+            labels = labels.to(device)
+            logits = probe(encoder(x))
+            loss = criterion(logits, labels)
+            total_loss += loss.item() * labels.size(0)
+            prediction = logits.argmax(dim=1)
+            correct += (prediction == labels).sum().item()
+            total += labels.size(0)
+    acc = correct / total
+    print(f"Epoch: {e}, Test Acc: {acc}")
+    return acc
+
+def save_models(params_dir: str, e: Encoder, p: Projector, q=1):
+    if (q == 1):
+        encoder_path = os.path.join(params_dir, "encoder.pth")
+        projector_path = os.path.join(params_dir, "projector.pth")
+    if (q == 4):
+        encoder_path = os.path.join(params_dir, "q4_encoder.pth")
+        projector_path = os.path.join(params_dir, "q4_projector.pth")
     torch.save(e.state_dict(), encoder_path)
     torch.save(p.state_dict(), projector_path)
     print(f"Models saved:\n - Encoder: {encoder_path}\n - Projector: {projector_path}")
 
-def load_models(params_dir: str, device, D=hp.encoded_dim, proj_dim=hp.projected_dim):
+def load_models(params_dir: str, device, D=hp.encoded_dim, proj_dim=hp.projected_dim, q=1):
     encoder = Encoder(D=D)
     projector = Projector(encoded_dim=D, proj_dim=proj_dim)
-    encoder_path = os.path.join(params_dir, "encoder.pth")
-    projector_path = os.path.join(params_dir, "projector.pth")
+    if (q == 1):
+        encoder_path = os.path.join(params_dir, "encoder.pth")
+        projector_path = os.path.join(params_dir, "projector.pth")
+    if (q == 4):
+        encoder_path = os.path.join(params_dir, "q4_encoder.pth")
+        projector_path = os.path.join(params_dir, "q4_projector.pth")
     encoder.load_state_dict(torch.load(encoder_path, map_location=device))
     projector.load_state_dict(torch.load(projector_path, map_location=device))
     encoder.to(device)
     projector.to(device)
     print(f"Loaded encoder and projector from '{params_dir}'")
     return encoder, projector
+
+def save_linear_probe(params_dir: str, probe: LinearProbe, q=1):
+    probe_path = os.path.join(params_dir, f"{q}_probe.pth")
+    torch.save(probe.state_dict(), probe_path)
+
+def load_linear_probe(params_dir: str, encoded_dim: int, num_classes: int = 10, device: str = "cpu") -> LinearProbe:
+    probe = LinearProbe(encoded_dim=encoded_dim, num_classes=num_classes)
+    probe_path = os.path.join(params_dir, "probe.pth")
+    probe.load_state_dict(torch.load(probe_path, map_location=device))
+    probe.to(device)
+    print(f"Linear probe loaded from: {probe_path}")
+    return probe
