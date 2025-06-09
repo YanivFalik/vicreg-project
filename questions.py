@@ -59,7 +59,8 @@ def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoad
 
 # here train_X will have the test transform (no need the train aug because encoder already trained)
 def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: str, figs_dir: str, debug: bool, q=1):
-    epochs = num_of_epoch(debug)
+    # for training the classifier limited number of epochs is also good 
+    epochs = 5
     
     num_classes = len(train_X.dataset.base_dataset.classes)
     probe = LinearProbe(hp.encoded_dim, num_classes=num_classes).to(device)
