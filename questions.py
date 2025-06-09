@@ -11,7 +11,7 @@ from tqdm import tqdm
 from models import Encoder, Projector, LinearProbe, train_forward, test_loss, probe_test_acc, save_models, save_linear_probe, load_models
 from losses import vicreg_loss, q4_loss
 import hyperparams as hp
-from augmentations import get_cifar_dataset
+from augmentations import get_cifar_dataset, get_cifar_dataset_test_transform
 from plots import q1_plot_figs, q2_plot_figs, q3_test_accuracy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
