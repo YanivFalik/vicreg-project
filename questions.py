@@ -62,7 +62,7 @@ def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: st
     epochs = num_of_epoch(debug)
     
     num_classes = len(train_X.dataset.base_dataset.classes)
-    probe = LinearProbe(hp.encoded_dim, num_classes=num_classes)
+    probe = LinearProbe(hp.encoded_dim, num_classes=num_classes).to(device)
     
     # optimizer should not optimize encoder params, only linear prob params
     encoder.eval()
@@ -155,7 +155,7 @@ def main(debug: bool):
     # q1(train_X, test_X, params_dir=params_dir, figs_dir=figs_dir, debug=debug)
 
     e, _ = load_models(params_dir, device, q=1)
-    q2(e, test_X, figs_dir)
+    # q2(e, test_X, figs_dir)
 
     train_X_test_transform, _ = get_cifar_dataset_test_transform()
     q3(e, train_X_test_transform, test_X, params_dir, figs_dir, debug=False)
