@@ -134,8 +134,8 @@ def plot_roc_curve(scores_q1, scores_q5, labels, figs_dir):
     anomaly_scores_q5 = -scores_q5
     
     # Compute ROC and AUC for Q1
-    fpr1, tpr1, _ = roc_curve(labels, scores_q1)
-    auc1 = roc_auc_score(labels, scores_q1)
+    fpr1, tpr1, _ = roc_curve(labels, anomaly_scores_q1)
+    auc1 = roc_auc_score(labels, anomaly_scores_q5)
 
     # Compute ROC and AUC for Q5
     fpr2, tpr2, _ = roc_curve(labels, scores_q5)
