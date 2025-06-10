@@ -27,14 +27,14 @@ def q1_q2_ad(params_dir, figs_dir, debug):
     q1_all_encoded, _ = get_all_encoded(q1_encoder, train_X)
     q5_all_encoded, _ = get_all_encoded(q5_encoder, train_X)
 
-    q1_score, labels, q1_mnist_score, q1_cifar_score = compute_knn_density_est(q1_encoder, q1_all_encoded, test_X)
-    q5_score, _, q5_mnist_score, q5_cifar_score = compute_knn_density_est(q5_encoder, q5_all_encoded, test_X)
+    q1_score, q1_labels, q1_mnist_score, q1_cifar_score = compute_knn_density_est(q1_encoder, q1_all_encoded, test_X)
+    q5_score, q5_labels, q5_mnist_score, q5_cifar_score = compute_knn_density_est(q5_encoder, q5_all_encoded, test_X)
 
     print("Printing KNN density estimation (AD-Q1)")
     print(f"Q1 encoder: MNIST - {q1_mnist_score}, CIFAR - {q1_cifar_score}")
     print(f"Q5 encoder: MNIST - {q5_mnist_score}, CIFAR - {q5_cifar_score}")
 
-    plot_roc_curve(q1_score, q5_score, labels, figs_dir)
+    plot_roc_curve(q1_score, q5_score, q1_labels, q5_labels, figs_dir)
 
 def q7(params_dir, figs_dir, debug):
     q1_encoder, _ = load_models(params_dir, device, q=1)
