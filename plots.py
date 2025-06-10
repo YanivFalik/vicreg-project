@@ -4,6 +4,8 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import torch
 import numpy as np
+from sklearn.metrics import roc_curve, roc_auc_score
+
 
 
 def q1_plot_figs(objectives, test_loss_per_epoch, figs_dir):
@@ -125,3 +127,28 @@ def q7_plotting(img_to_near, img_to_distant, base_dataset, figs_dir, q):
     plt.tight_layout()
     plt.savefig(os.path.join(figs_dir, f"q7_q{q}_near_and_distant.png"))
     plt.close(fig)
+
+def plot_roc_curve(scores_q1, scores_q5, labels, figs_dir):
+    # Compute ROC and AUC for Q1
+    fpr1, tpr1, _ = roc_curve(labels, scores_q1)
+    auc1 = roc_auc_score(labels, scores_q1)
+
+    # Compute ROC and AUC for Q5
+    fpr2, tpr2, _ = roc_curve(labels, scores_q5)
+    auc2 = roc_auc_score(labels, scores_q5)
+
+    # Plotting
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr1, tpr1, label=f'VICReg (Q1) [AUC = {auc1:.4f}]')
+    plt.plot(fpr2, tpr2, label=f'VICReg (Q5) [AUC = {auc2:.4f}]')
+    plt.plot([0, 1], [0, 1], 'k--', alpha=0.5)
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve for Anomaly Detection')
+    plt.legend(loc='lower right')
+    plt.grid(True)
+
+    # Save figure
+    os.makedirs(figs_dir, exist_ok=True)
+    plt.savefig(os.path.join(figs_dir, "ad_q2.png"))
+    plt.close()

@@ -108,8 +108,7 @@ def get_knn_maps(all_encoded, encoded_indices, query_indices, k=5):
 
     return img_to_near, img_to_distant
 
-
-def compute_knn_density_est(encoder: Encoder, train_all_encoded: torch.Tensor, test_X: DataLoader) -> tuple[float, float]:
+def compute_knn_density_est(encoder: Encoder, train_all_encoded: np.ndarray, test_X: DataLoader) -> tuple[np.ndarray, np.ndarray, float, float]:
     encoder.eval()
     
     test_all_encoded, test_labels = get_ad_test_all_encoded(encoder, test_X)
@@ -118,17 +117,13 @@ def compute_knn_density_est(encoder: Encoder, train_all_encoded: torch.Tensor, t
     faiss_index.add(train_all_encoded.astype("float32"))
 
     D, _ = faiss_index.search(test_all_encoded, k=2)
-    knn_distances = D[:, 1]  # 2nd neighbor distance
+    knn_distances = D[:, 1]
 
-    # Inverse distances (add small epsilon to avoid division by 0)
     epsilon = 1e-8
     density_scores = 1.0 / (knn_distances + epsilon)
 
     test_labels = test_labels.astype(int)
-    cifar_mask = test_labels == 0
-    mnist_mask = test_labels == 1
+    cifar_score = density_scores[test_labels == 0].mean()
+    mnist_score = density_scores[test_labels == 1].mean()
 
-    cifar_score = density_scores[cifar_mask].mean()
-    mnist_score = density_scores[mnist_mask].mean()
-
-    return float(mnist_score), float(cifar_score)
+    return density_scores, test_labels, float(mnist_score), float(cifar_score)
