@@ -94,3 +94,38 @@ def q3_test_accuracy(test_acc_per_epoch, figs_dir, filename="test_accuracy.png",
     plt.savefig(os.path.join(figs_dir, f"q{str(q)}_{filename}"))
     plt.close()
     print(f"Test accuracy figure saved to: {os.path.join(figs_dir, filename)}")
+
+def q7_plotting(img_to_near, img_to_distant, base_dataset, figs_dir, q):
+    num_classes = len(img_to_near)
+    num_rows = 1 + 5 + 5  # original + 5 near + 5 distant
+    fig, axes = plt.subplots(num_rows, num_classes, figsize=(2 * num_classes, 2 * num_rows))
+
+    for col_idx, (img_idx, near_idxs) in enumerate(img_to_near.items()):
+        distant_idxs = img_to_distant[img_idx]
+
+        # First row: the anchor/original image
+        img, _ = base_dataset[img_idx]
+        if isinstance(img, torch.Tensor):
+            img = img.permute(1, 2, 0).numpy()
+        axes[0, col_idx].imshow(np.clip(img, 0, 1))
+        axes[0, col_idx].axis('off')
+        axes[0, col_idx].set_title(f"Class {col_idx}")
+
+        # Rows 1-5: nearest neighbors
+        for row_offset, neighbor_idx in enumerate(near_idxs):
+            img, _ = base_dataset[neighbor_idx]
+            if isinstance(img, torch.Tensor):
+                img = img.permute(1, 2, 0).numpy()
+            axes[1 + row_offset, col_idx].imshow(np.clip(img, 0, 1))
+            axes[1 + row_offset, col_idx].axis('off')
+
+        # Rows 6-10: most distant
+        for row_offset, distant_idx in enumerate(distant_idxs):
+            img, _ = base_dataset[distant_idx]
+            if isinstance(img, torch.Tensor):
+                img = img.permute(1, 2, 0).numpy()
+            axes[6 + row_offset, col_idx].imshow(np.clip(img, 0, 1))
+            axes[6 + row_offset, col_idx].axis('off')
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(figs_dir, f"q{7}_q{q}_near_and_distant.png"))

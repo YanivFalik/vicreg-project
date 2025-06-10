@@ -56,7 +56,11 @@ class PairedIndexDataset(torch.utils.data.Dataset):
 
         return img1, img2, label1
 
-
+class IndexedCIFAR10(datasets.CIFAR10):
+    def __getitem__(self, index):
+        img, label = super().__getitem__(index)
+        return img, label, index
+    
 def get_cifar_dataset():
     train_dataset = AugmentTwiceDataset(base_dataset=datasets.CIFAR10(root="./cifar_data", train=True, download=True), transform=train_transform)
     test_dataset = AugmentTwiceDataset(base_dataset=datasets.CIFAR10(root="./cifar_data", train=False, download=True), transform=test_transform)
@@ -76,11 +80,10 @@ def get_cifar_dataset_test_transform():
     return train_loader, test_loader
 
 def raw_loader():
-    # no transform needed for the pics
-    train_dataset = datasets.CIFAR10(root="./cifar_data", train=True, download=True, transform=test_transform)
-    test_dataset = datasets.CIFAR10(root="./cifar_data", train=False, download=True, transform=test_transform)
+    train_dataset = IndexedCIFAR10(root="./cifar_data", train=True, download=True, transform=test_transform)
+    test_dataset = IndexedCIFAR10(root="./cifar_data", train=False, download=True, transform=test_transform)
     
-    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
     
     return train_loader, test_loader
@@ -90,3 +93,23 @@ def get_pairwise_dataloader(pairs):
     paired_dataset = PairedIndexDataset(base_dataset=base_dataset, index_pairs=pairs, transform=test_transform)
     paired_dataloader = DataLoader(paired_dataset, batch_size, shuffle=True)
     return paired_dataloader
+
+def get_one_img_per_class(transform=test_transform, num_classes=10):
+    base_dataset = datasets.CIFAR10(root="./cifar_data", train=True, download=True)
+
+    class_to_idx = {}
+    selected_imgs = []
+
+    for i in range(len(base_dataset)):
+        img, label = base_dataset[i]
+        if label not in class_to_idx:
+            class_to_idx[label] = i
+            transformed_img = transform(img)
+            selected_imgs.append((transformed_img, label, i)) 
+            if len(class_to_idx) == num_classes:
+                break
+
+    return selected_imgs
+
+def get_base_dataset():
+    return datasets.CIFAR10(root="./cifar_data", train=True, download=True)

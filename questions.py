@@ -14,8 +14,8 @@ import numpy as np
 from models import Encoder, Projector, LinearProbe, train_forward, test_loss, probe_test_acc, save_models, save_linear_probe, load_models
 from losses import vicreg_loss, q4_loss
 import hyperparams as hp
-from augmentations import get_cifar_dataset, get_cifar_dataset_test_transform, raw_loader, get_pairwise_dataloader
-from plots import q1_plot_figs, q2_plot_figs, q3_test_accuracy
+from augmentations import get_one_img_per_class, get_cifar_dataset, get_cifar_dataset_test_transform, raw_loader, get_pairwise_dataloader, get_base_dataset
+from plots import q1_plot_figs, q2_plot_figs, q3_test_accuracy, q7_plotting
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
@@ -25,31 +25,99 @@ def num_of_epoch(debug: bool):
             return hp.epoch_debug
         else:
             return hp.epoch_all
+        
+def get_all_encoded(encoder: Encoder, raw_loader: DataLoader):
+    encoder.eval()
+    encoder.to(device)
 
-def get_index_pairs(q1_encoder: Encoder, raw_loader):
+    all_encoded = []
+    all_indices = []
+    with torch.no_grad():
+        for x, _, idx in raw_loader:
+            x = x.to(device)
+            z = encoder(x)
+            all_encoded.append(z.cpu())
+            all_indices.extend(idx.tolist())
+
+    all_encoded = torch.cat(all_encoded, dim=0).numpy()
+    return all_encoded, all_indices
+
+def get_index_pairs(q1_encoder: Encoder, raw_loader: DataLoader):
     q1_encoder.eval()
     q1_encoder.to(device)
 
     all_encoded = []
+    all_indices = []
+
     with torch.no_grad():
-        for x, _ in tqdm(raw_loader):
+        for x, _, idx in tqdm(raw_loader):
             x = x.to(device)
             z = q1_encoder(x)
             all_encoded.append(z.cpu())
+            all_indices.extend(idx.tolist())  # Save real indices
+
     all_encoded = torch.cat(all_encoded, dim=0).numpy()
     N = all_encoded.shape[0]
 
-    knn = NearestNeighbors(n_neighbors=4, metric='euclidean') 
+    knn = NearestNeighbors(n_neighbors=4, metric='euclidean')
     knn.fit(all_encoded)
-    distances, neighbors = knn.kneighbors(all_encoded)
+    _, neighbors = knn.kneighbors(all_encoded)
 
-    # Create (i, j) pairs with j randomly picked among 3 nearest (excluding i)
     index_pairs = []
-    for i in range(N):
-        j = random.choice(neighbors[i][1:]) 
+    for row_i in range(N):
+        i = all_indices[row_i]
+        # pick a random neighbor j ≠ i
+        j_idx_in_neighbors = random.choice(neighbors[row_i][1:])
+        j = all_indices[j_idx_in_neighbors]
         index_pairs.append((i, j))
 
     return index_pairs
+
+def get_knn_maps(all_encoded, encoded_indices, query_indices, k=5):
+    knn = NearestNeighbors(n_neighbors=k+1, metric='euclidean')
+    knn.fit(all_encoded)
+
+    img_to_near = {}
+    img_to_distant = {}
+
+    index_map = {idx: i for i, idx in enumerate(encoded_indices)}  # dataset_idx → row_idx
+
+    for dataset_idx in query_indices:
+        if dataset_idx not in index_map:
+            continue
+        row_idx = index_map[dataset_idx]
+
+        # Nearest
+        dists, neighbors = knn.kneighbors(all_encoded[row_idx].reshape(1, -1), n_neighbors=k+1)
+        neighbors = neighbors[0].tolist()
+        neighbors.remove(row_idx)
+        img_to_near[dataset_idx] = [encoded_indices[n] for n in neighbors]
+
+        # Most distant
+        dists = np.linalg.norm(all_encoded - all_encoded[row_idx], axis=1)
+        distant_indices = np.argsort(-dists)[:k]
+        img_to_distant[dataset_idx] = [encoded_indices[i] for i in distant_indices]
+
+    return img_to_near, img_to_distant
+
+def q7(params_dir, figs_dir, debug):
+    q1_encoder, _ = load_models(params_dir, device, q=1)
+    q5_encoder, _ = load_models(params_dir, device, q=5)
+    
+    # get all encoded 
+    train_raw, _ = raw_loader()
+    base_dataset = get_base_dataset()
+    q1_all_encoded, q1_indices = get_all_encoded(q1_encoder, train_raw)
+    q5_all_encoded, q5_indices = get_all_encoded(q5_encoder, train_raw)
+
+    #map image index to index of near neighbors, and index of distant neighbors
+    img_per_class = get_one_img_per_class()
+    img_indices = [idx for (_, _, idx) in img_per_class]
+    q1_img_to_near, q1_img_to_distant = get_knn_maps(q1_all_encoded, q1_indices, img_indices)
+    q5_img_to_near, q5_img_to_distant = get_knn_maps(q5_all_encoded, q5_indices, img_indices)
+
+    q7_plotting(q1_img_to_near, q1_img_to_distant, base_dataset, figs_dir, q=1)
+    q7_plotting(q5_img_to_near, q5_img_to_distant, base_dataset, figs_dir, q=5)
 
 def q5(encoder: Encoder, params_dir, figs_dir, debug):
     epochs = 1
@@ -215,7 +283,7 @@ def main(debug: bool):
     
     # q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
     q5(e, params_dir, figs_dir, debug)
-    # q7
+    q7(params_dir, figs_dir, debug)
 
 if __name__ == "__main__":
     main(debug=True)
