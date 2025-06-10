@@ -20,7 +20,8 @@ print(f"Using device: {device}")
 
 def q1_q2_ad(params_dir, figs_dir, debug):
     train_X, test_X = get_ad_train_and_test_dataloader()
-    
+    import pdb
+    pdb.set_trace()
     q1_encoder, _ = load_models(params_dir, device, q=1)
     q5_encoder, _ = load_models(params_dir, device, q=5)
 
