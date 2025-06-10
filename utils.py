@@ -115,7 +115,7 @@ def compute_knn_density_est(encoder: Encoder, train_all_encoded: torch.Tensor, t
     test_all_encoded, test_labels = get_ad_test_all_encoded(encoder, test_X)
 
     faiss_index = faiss.IndexFlatL2(train_all_encoded.shape[1])
-    faiss_index.add(train_all_encoded.numpy().astype("float32"))
+    faiss_index.add(train_all_encoded.astype("float32"))
 
     D, _ = faiss_index.search(test_all_encoded, k=2)
     knn_distances = D[:, 1]  # 2nd neighbor distance
