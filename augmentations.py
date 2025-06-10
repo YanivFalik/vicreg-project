@@ -60,7 +60,7 @@ class IndexedCIFAR10(datasets.CIFAR10):
     def __getitem__(self, index):
         img, label = super().__getitem__(index)
         return img, label, index
-    
+
 def get_cifar_dataset():
     train_dataset = AugmentTwiceDataset(base_dataset=datasets.CIFAR10(root="./cifar_data", train=True, download=True), transform=train_transform)
     test_dataset = AugmentTwiceDataset(base_dataset=datasets.CIFAR10(root="./cifar_data", train=False, download=True), transform=test_transform)
@@ -113,3 +113,39 @@ def get_one_img_per_class(transform=test_transform, num_classes=10):
 
 def get_base_dataset():
     return datasets.CIFAR10(root="./cifar_data", train=True, download=True)
+
+
+# Anomaly Detection part
+# we have to transform mnist images [1, 28, 28] to [3, 32, 32] so they can fit the encoder
+mnist_shape_to_cifar_transform = transforms.Compose([
+    transforms.Resize(32),
+    transforms.Grayscale(num_output_channels=3),  # to get 3 channels from 1
+    transforms.ToTensor(),
+])
+
+class ADDataset(torch.utils.data.Dataset):
+    def __init__(self, cifar_dataset, mnist_dataset):
+        self.cifar = cifar_dataset
+        self.mnist = mnist_dataset
+        self.cifar_len = len(self.cifar)
+    
+    def __len__(self):
+        return len(self.cifar) + len(self.mnist)
+    
+    def __getitem__(self, idx):
+        if (idx < self.cifar_len):
+            img, _ = self.cifar[idx]
+            # cifar images are labeld 0 = not anomolous
+            return img, 0 
+        else: 
+            img, _ = self.mnist[idx - self.cifar_len]
+            # mnist images are labeled 1 = anomolous
+            return img, 1
+
+def get_ad_train_and_test_dataloader():
+    cifar_test_dataset = datasets.CIFAR10(root="./cifar_data", train=False, download=True, transform=test_transform)
+    mnist_test_dataset = datasets.MNIST(root="./mnist_data", train=False, download=True, transform=mnist_shape_to_cifar_transform)
+    test_loader = DataLoader(dataset=ADDataset(cifar_dataset=cifar_test_dataset, mnist_dataset=mnist_test_dataset), batch_size=batch_size, shuffle=True)
+
+    train_loader, _ = raw_loader()
+    return train_loader, test_loader
