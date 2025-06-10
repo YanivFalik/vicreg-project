@@ -52,7 +52,7 @@ def get_index_pairs(q1_encoder: Encoder, raw_loader):
     return index_pairs
 
 def q5(encoder: Encoder, params_dir, figs_dir, debug):
-    epochs = 15
+    epochs = 1
     raw_train, raw_test = raw_loader()
     train_X, test_X = get_pairwise_dataloader(get_index_pairs(encoder, raw_train)), get_pairwise_dataloader(get_index_pairs(encoder, raw_test))
     encoder = Encoder().to(device)
@@ -215,6 +215,7 @@ def main(debug: bool):
     
     # q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
     q5(e, params_dir, figs_dir, debug)
+    # q7
 
 if __name__ == "__main__":
     main(debug=True)
