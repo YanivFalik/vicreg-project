@@ -115,7 +115,7 @@ def q7(params_dir, figs_dir, debug):
     img_indices = [idx for (_, _, idx) in img_per_class]
     q1_img_to_near, q1_img_to_distant = get_knn_maps(q1_all_encoded, q1_indices, img_indices)
     q5_img_to_near, q5_img_to_distant = get_knn_maps(q5_all_encoded, q5_indices, img_indices)
-
+    print(f"q1 img to near {q1_img_to_near}")
     q7_plotting(q1_img_to_near, q1_img_to_distant, base_dataset, figs_dir, q=1)
     q7_plotting(q5_img_to_near, q5_img_to_distant, base_dataset, figs_dir, q=5)
 
@@ -282,7 +282,7 @@ def main(debug: bool):
     # q3(e, train_X_test_transform, test_X, params_dir, figs_dir, debug=False)
     
     # q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
-    q5(e, params_dir, figs_dir, debug)
+    # q5(e, params_dir, figs_dir, debug)
     q7(params_dir, figs_dir, debug)
 
 if __name__ == "__main__":
