@@ -135,11 +135,11 @@ def plot_roc_curve(scores_q1, scores_q5, labels, figs_dir):
     
     # Compute ROC and AUC for Q1
     fpr1, tpr1, _ = roc_curve(labels, anomaly_scores_q1)
-    auc1 = roc_auc_score(labels, anomaly_scores_q5)
+    auc1 = roc_auc_score(labels, anomaly_scores_q1)
 
     # Compute ROC and AUC for Q5
-    fpr2, tpr2, _ = roc_curve(labels, scores_q5)
-    auc2 = roc_auc_score(labels, scores_q5)
+    fpr2, tpr2, _ = roc_curve(labels, anomaly_scores_q5)
+    auc2 = roc_auc_score(labels, anomaly_scores_q5)
 
     # Plotting
     plt.figure(figsize=(8, 6))
