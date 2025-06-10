@@ -117,7 +117,7 @@ def compute_knn_density_est(encoder: Encoder, train_all_encoded: np.ndarray, tes
     faiss_index.add(train_all_encoded.astype("float32"))
 
     D, _ = faiss_index.search(test_all_encoded, k=2)
-    knn_distances = D[:, 1]
+    knn_distances = D.mean(axis=1) 
 
     epsilon = 1e-8
     density_scores = 1.0 / (knn_distances + epsilon)
