@@ -31,7 +31,7 @@ def get_ad_test_all_encoded(encoder: Encoder, test_X: DataLoader):
             all_labels.extend(label.tolist())
 
     all_encoded = torch.cat(all_encoded, dim=0).numpy().astype('float32')
-    all_labels = torch.cat(all_labels, dim=0).numpy()
+    all_labels = torch.tensor(all_labels, dtype=torch.long).numpy()
     return all_encoded, all_labels
 
 def get_all_encoded(encoder: Encoder, raw_loader: DataLoader):
