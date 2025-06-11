@@ -70,7 +70,7 @@ def get_index_pairs(q1_encoder: Encoder, raw_loader: DataLoader):
     knn = NearestNeighbors(n_neighbors=4, metric='euclidean')
     knn.fit(all_encoded)
     _, neighbors = knn.kneighbors(all_encoded)
-    
+
     index_pairs = []
     for row_i in range(N):
         i = all_indices[row_i]
@@ -119,11 +119,8 @@ def compute_knn_density_est(encoder: Encoder, train_all_encoded: np.ndarray, tes
     D, _ = faiss_index.search(test_all_encoded, k=2)
     knn_distances = D.mean(axis=1) 
 
-    epsilon = 1e-8
-    density_scores = 1.0 / (knn_distances + epsilon)
-
     test_labels = test_labels.astype(int)
-    cifar_score = density_scores[test_labels == 0].mean()
-    mnist_score = density_scores[test_labels == 1].mean()
+    cifar_score = knn_distances[test_labels == 0].mean()
+    mnist_score = knn_distances[test_labels == 1].mean()
 
-    return density_scores, test_labels, float(mnist_score), float(cifar_score)
+    return knn_distances, test_labels, float(mnist_score), float(cifar_score)
