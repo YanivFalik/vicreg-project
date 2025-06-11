@@ -91,7 +91,7 @@ def raw_loader():
 def get_pairwise_dataloader(pairs):
     base_dataset = datasets.CIFAR10(root="./cifar_data", train=True, download=True, transform=None)
     paired_dataset = PairedIndexDataset(base_dataset=base_dataset, index_pairs=pairs, transform=test_transform)
-    paired_dataloader = DataLoader(paired_dataset, batch_size, shuffle=True)
+    paired_dataloader = DataLoader(paired_dataset, batch_size, shuffle=False)
     return paired_dataloader
 
 def get_one_img_per_class(transform=test_transform, num_classes=10):

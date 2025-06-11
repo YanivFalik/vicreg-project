@@ -67,17 +67,17 @@ def get_index_pairs(q1_encoder: Encoder, raw_loader: DataLoader):
     all_encoded = torch.cat(all_encoded, dim=0).numpy()
     N = all_encoded.shape[0]
 
-    knn = NearestNeighbors(n_neighbors=4, metric='euclidean')
-    knn.fit(all_encoded)
-    _, neighbors = knn.kneighbors(all_encoded)
-
+    # knn = NearestNeighbors(n_neighbors=4, metric='euclidean')
+    # knn.fit(all_encoded)
+    # _, neighbors = knn.kneighbors(all_encoded)
+    faiss_index = faiss.IndexFlatL2(d=all_encoded.shape[1])
+    faiss_index.add(all_encoded.astype("float32"))
+    D, neighbors = faiss_index.search(all_encoded, k=4)
+    neighbors= neighbors[:,1:]
     index_pairs = []
     for row_i in range(N):
-        i = all_indices[row_i]
-        # pick a random neighbor j ≠ i
-        j_idx_in_neighbors = random.choice(neighbors[row_i][1:])
-        j = all_indices[j_idx_in_neighbors]
-        index_pairs.append((i, j))
+        neig_index = neighbors[row_i][random.randint(0, 2)]
+        index_pairs.append((row_i, neig_index))
 
     return index_pairs
 
@@ -118,6 +118,7 @@ def compute_knn_density_est(encoder: Encoder, train_all_encoded: np.ndarray, tes
 
     D, _ = faiss_index.search(test_all_encoded, k=2)
     knn_distances = D.mean(axis=1) 
+
 
     test_labels = test_labels.astype(int)
     cifar_score = knn_distances[test_labels == 0].mean()
