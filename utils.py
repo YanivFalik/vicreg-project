@@ -70,7 +70,7 @@ def get_index_pairs(q1_encoder: Encoder, raw_loader: DataLoader):
     knn = NearestNeighbors(n_neighbors=4, metric='euclidean')
     knn.fit(all_encoded)
     _, neighbors = knn.kneighbors(all_encoded)
-
+    
     index_pairs = []
     for row_i in range(N):
         i = all_indices[row_i]

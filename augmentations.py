@@ -145,7 +145,7 @@ class ADDataset(torch.utils.data.Dataset):
 def get_ad_train_and_test_dataloader():
     cifar_test_dataset = datasets.CIFAR10(root="./cifar_data", train=False, download=True, transform=test_transform)
     mnist_test_dataset = datasets.MNIST(root="./mnist_data", train=False, download=True, transform=mnist_shape_to_cifar_transform)
-    test_loader = DataLoader(dataset=ADDataset(cifar_dataset=cifar_test_dataset, mnist_dataset=mnist_test_dataset), batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(dataset=ADDataset(cifar_dataset=cifar_test_dataset, mnist_dataset=mnist_test_dataset), batch_size=batch_size, shuffle=False)
 
     train_loader, _ = raw_loader()
     return train_loader, test_loader
