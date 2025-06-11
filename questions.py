@@ -153,12 +153,17 @@ def q2(e: Encoder, test_X: DataLoader, figs_dir: str, q=1):
     all_encodings = []
     all_labels = []
     for _, (X_aug1, X_aug2, label) in enumerate(test_X):
-        X_aug1 = X_aug1.to(device)
-        X_aug2 = X_aug2.to(device)
-        y1 = e.encode(X_aug1).detach().cpu()
-        y2 = e.encode(X_aug2).detach().cpu()
-        all_encodings.append(y1)
-        all_encodings.append(y2) 
+        if (q == 1): 
+            X_aug1 = X_aug1.to(device)
+            X_aug2 = X_aug2.to(device)
+            y1 = e.encode(X_aug1).detach().cpu()
+            y2 = e.encode(X_aug2).detach().cpu()
+            all_encodings.append(y1)
+            all_encodings.append(y2) 
+        else:
+            X_aug1 = X_aug1.to(device)
+            y1 = e.encode(X_aug1).detach().cpu()
+            all_encodings.append(y1)
 
         # all labels will have 2 copies of the encoding of the same batch (aug1, aug2) 
         # therefore each label batch should have 2 copies 2 
