@@ -59,8 +59,30 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
     epochs = 1
     raw_train, raw_test = raw_loader()
     train_X = get_pairwise_dataloader(get_index_pairs(encoder, raw_train))
-    import pdb 
-    pdb.set_trace()
+    for i in range(5): 
+        import torchvision.transforms.functional as F
+        import matplotlib.pyplot as plt
+        import pdb 
+        pdb.set_trace()
+        # Convert tensors to PIL images
+        img1, img2, _ = train_X.dataset[i]
+        img1_pil = F.to_pil_image(img1)
+        img2_pil = F.to_pil_image(img2)
+
+        # Plot them side by side
+        plt.figure(figsize=(4, 2))
+        plt.subplot(1, 2, 1)
+        plt.imshow(img1_pil)
+        plt.title("img1")
+        plt.axis('off')
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(img2_pil)
+        plt.title("img2 (nearest neighbor)")
+        plt.axis('off')
+
+        plt.tight_layout()
+        plt.show()
     encoder = Encoder().to(device)
     projector = Projector().to(device)
     optimizer = optim.Adam(params = chain(encoder.parameters(), projector.parameters()), 
