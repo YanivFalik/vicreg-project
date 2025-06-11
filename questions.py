@@ -81,6 +81,7 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
             optimizer.step()
         test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
     save_models(params_dir, encoder, projector, q=5)
+    q2(encoder, test_X, figs_dir, q=5)
     q3(encoder, train_X, test_X, params_dir, figs_dir, debug, q=5)
 
 def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoader,debug: bool, params_dir: str, figs_dir: str):
