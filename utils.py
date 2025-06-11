@@ -70,7 +70,7 @@ def get_index_pairs(q1_encoder: Encoder, raw_loader: DataLoader):
     # knn = NearestNeighbors(n_neighbors=4, metric='euclidean')
     # knn.fit(all_encoded)
     # _, neighbors = knn.kneighbors(all_encoded)
-    faiss_index = faiss.IndexFlatL2(d=all_encoded.shape[1])
+    faiss_index = faiss.IndexFlatL2(all_encoded.shape[1])
     faiss_index.add(all_encoded.astype("float32"))
     D, neighbors = faiss_index.search(all_encoded, k=4)
     neighbors= neighbors[:,1:]
