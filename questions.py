@@ -229,7 +229,7 @@ def main(debug: bool):
 
 
     # AD Part 
-    q1_q2_ad(params_dir, figs_dir, debug)
+    # q1_q2_ad(params_dir, figs_dir, debug)
 
 if __name__ == "__main__":
     main(debug=True)
