@@ -58,14 +58,16 @@ def q7(params_dir, figs_dir, debug):
 def q5(encoder: Encoder, params_dir, figs_dir, debug):
     epochs = 1
     raw_train, raw_test = raw_loader()
-    train_X, test_X = get_pairwise_dataloader(get_index_pairs(encoder, raw_train)), get_pairwise_dataloader(get_index_pairs(encoder, raw_test))
+    train_X = get_pairwise_dataloader(get_index_pairs(encoder, raw_train))
+    import pdb 
+    pdb.set_trace()
     encoder = Encoder().to(device)
     projector = Projector().to(device)
     optimizer = optim.Adam(params = chain(encoder.parameters(), projector.parameters()), 
                            lr=hp.learning_rate, betas=hp.betas, weight_decay=hp.weight_decay)
 
     objectives = []
-    test_loss_per_epoch = []
+    # test_loss_per_epoch = []
     for epoch_num in range(1, epochs + 1):
         encoder.train()
         projector.train()
@@ -79,10 +81,10 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
             optimizer.zero_grad()
             total_batch_loss.backward()
             optimizer.step()
-        test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
+        # test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
     save_models(params_dir, encoder, projector, q=5)
-    q2(encoder, test_X, figs_dir, q=5)
-    q3(encoder, train_X, test_X, params_dir, figs_dir, debug, q=5)
+    q2(encoder, raw_test, figs_dir, q=5)
+    q3(encoder, raw_train, raw_test, params_dir, figs_dir, debug, q=5)
 
 def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoader,debug: bool, params_dir: str, figs_dir: str):
     # i limited the number of epochs because from very early epochs we can see the both objectives collapse to ~0 (no need 30 epochs to show it)
