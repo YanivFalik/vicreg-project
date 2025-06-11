@@ -59,40 +59,14 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
     epochs = 1
     raw_train, raw_test = raw_loader()
     index_pairs = get_index_pairs(encoder, raw_train)
-    import pdb
-    pdb.set_trace()
     train_X = get_pairwise_dataloader(index_pairs)
-    # for i in range(5): 
-    #     import torchvision.transforms.functional as F
-    #     import matplotlib.pyplot as plt
-    #     import pdb 
-    #     pdb.set_trace()
-    #     # Convert tensors to PIL images
-    #     img1, img2, _ = train_X.dataset[i]
-    #     img1_pil = F.to_pil_image(img1)
-    #     img2_pil = F.to_pil_image(img2)
 
-    #     # Plot them side by side
-    #     plt.figure(figsize=(4, 2))
-    #     plt.subplot(1, 2, 1)
-    #     plt.imshow(img1_pil)
-    #     plt.title("img1")
-    #     plt.axis('off')
-
-    #     plt.subplot(1, 2, 2)
-    #     plt.imshow(img2_pil)
-    #     plt.title("img2 (nearest neighbor)")
-    #     plt.axis('off')
-
-    #     plt.tight_layout()
-    #     plt.show()
     encoder = Encoder().to(device)
     projector = Projector().to(device)
     optimizer = optim.Adam(params = chain(encoder.parameters(), projector.parameters()), 
                            lr=hp.learning_rate, betas=hp.betas, weight_decay=hp.weight_decay)
 
     objectives = []
-    # test_loss_per_epoch = []
     for epoch_num in range(1, epochs + 1):
         encoder.train()
         projector.train()
@@ -106,7 +80,6 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
             optimizer.zero_grad()
             total_batch_loss.backward()
             optimizer.step()
-        # test_loss_per_epoch.append(test_loss(encoder, projector, test_X, epoch_num, device=device))
     save_models(params_dir, encoder, projector, q=5)
     q2(encoder, raw_test, figs_dir, q=5)
     q3(encoder, raw_train, raw_test, params_dir, figs_dir, debug, q=5)
