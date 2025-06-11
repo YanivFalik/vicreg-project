@@ -129,17 +129,13 @@ def q7_plotting(img_to_near, img_to_distant, base_dataset, figs_dir, q):
     plt.close(fig)
 
 def plot_roc_curve(scores_q1, scores_q5, q1_labels, q5_labels, figs_dir):
-    # roc expects higher values for label == 1, so i flip the score sign 
-    anomaly_scores_q1 = -scores_q1
-    anomaly_scores_q5 = -scores_q5
-    
     # Compute ROC and AUC for Q1
-    fpr1, tpr1, _ = roc_curve(q1_labels, anomaly_scores_q1)
-    auc1 = roc_auc_score(q1_labels, anomaly_scores_q1)
+    fpr1, tpr1, _ = roc_curve(q1_labels, scores_q1)
+    auc1 = roc_auc_score(q1_labels, scores_q1)
 
     # Compute ROC and AUC for Q5
-    fpr2, tpr2, _ = roc_curve(q5_labels, anomaly_scores_q5)
-    auc2 = roc_auc_score(q5_labels, anomaly_scores_q5)
+    fpr2, tpr2, _ = roc_curve(q5_labels, scores_q5)
+    auc2 = roc_auc_score(q5_labels, scores_q5)
 
     # Plotting
     plt.figure(figsize=(8, 6))
