@@ -117,11 +117,12 @@ def compute_knn_density_est(encoder: Encoder, train_all_encoded: np.ndarray, tes
     faiss_index.add(train_all_encoded.astype("float32"))
 
     D, _ = faiss_index.search(test_all_encoded, k=2)
-    knn_distances = D.mean(axis=1) 
+    iverse_knn_density_score = D.mean(axis=1) 
+    most_anomalous_indices = np.argsort(-iverse_knn_density_score)[:7]  # descending sort
 
 
     test_labels = test_labels.astype(int)
-    cifar_score = knn_distances[test_labels == 0].mean()
-    mnist_score = knn_distances[test_labels == 1].mean()
+    cifar_score = iverse_knn_density_score[test_labels == 0].mean()
+    mnist_score = iverse_knn_density_score[test_labels == 1].mean()
 
-    return knn_distances, test_labels, float(mnist_score), float(cifar_score)
+    return most_anomalous_indices, iverse_knn_density_score, test_labels, float(mnist_score), float(cifar_score)

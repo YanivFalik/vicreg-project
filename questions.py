@@ -11,14 +11,14 @@ from tqdm import tqdm
 from models import Encoder, Projector, LinearProbe, train_forward, test_loss, probe_test_acc, save_models, save_linear_probe, load_models
 from losses import vicreg_loss, q4_loss
 import hyperparams as hp
-from augmentations import get_ad_train_and_test_dataloader, get_one_img_per_class, get_cifar_dataset, get_cifar_dataset_test_transform, raw_loader, get_pairwise_dataloader, get_base_dataset
-from plots import q1_plot_figs, q2_plot_figs, q3_test_accuracy, q7_plotting, plot_roc_curve
+from augmentations import get_ad_test_dataset_no_transform, get_ad_train_and_test_dataloader, get_one_img_per_class, get_cifar_dataset, get_cifar_dataset_test_transform, raw_loader, get_pairwise_dataloader, get_base_dataset
+from plots import plot_q3_ad, q1_plot_figs, q2_plot_figs, q3_test_accuracy, q7_plotting, plot_roc_curve
 from utils import num_of_epoch, get_all_encoded, get_index_pairs, get_knn_maps, compute_knn_density_est
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
-def q1_q2_ad(params_dir, figs_dir, debug):
+def q1_q2_q3_ad(params_dir, figs_dir, debug):
     train_X, test_X = get_ad_train_and_test_dataloader()
 
     q1_encoder, _ = load_models(params_dir, device, q=1)
@@ -27,14 +27,15 @@ def q1_q2_ad(params_dir, figs_dir, debug):
     q1_all_encoded, _ = get_all_encoded(q1_encoder, train_X)
     q5_all_encoded, _ = get_all_encoded(q5_encoder, train_X)
 
-    q1_score, q1_labels, q1_mnist_score, q1_cifar_score = compute_knn_density_est(q1_encoder, q1_all_encoded, test_X)
-    q5_score, q5_labels, q5_mnist_score, q5_cifar_score = compute_knn_density_est(q5_encoder, q5_all_encoded, test_X)
+    q1_most_anomalous_idx, q1_score, q1_labels, q1_mnist_score, q1_cifar_score = compute_knn_density_est(q1_encoder, q1_all_encoded, test_X)
+    q5_most_anomalous_idx, q5_score, q5_labels, q5_mnist_score, q5_cifar_score = compute_knn_density_est(q5_encoder, q5_all_encoded, test_X)
 
     print("Printing KNN density estimation (AD-Q1)")
     print(f"Q1 encoder: MNIST - {q1_mnist_score}, CIFAR - {q1_cifar_score}")
     print(f"Q5 encoder: MNIST - {q5_mnist_score}, CIFAR - {q5_cifar_score}")
 
     plot_roc_curve(q1_score, q5_score, q1_labels, q5_labels, figs_dir)
+    plot_q3_ad(q1_most_anomalous_idx, q5_most_anomalous_idx, get_ad_test_dataset_no_transform(), figs_dir)
 
 def q7(params_dir, figs_dir, debug):
     q1_encoder, _ = load_models(params_dir, device, q=1)
@@ -232,7 +233,8 @@ def main(debug: bool):
 
 
     # AD Part 
-    q1_q2_ad(params_dir, figs_dir, debug)
+    q1_q2_q3_ad(params_dir, figs_dir, debug)
+
 
 if __name__ == "__main__":
     main(debug=True)

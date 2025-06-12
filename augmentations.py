@@ -149,3 +149,8 @@ def get_ad_train_and_test_dataloader():
 
     train_loader, _ = raw_loader()
     return train_loader, test_loader
+
+def get_ad_test_dataset_no_transform():
+    cifar_test_dataset = datasets.CIFAR10(root="./cifar_data", train=False, download=True, transform=None)
+    mnist_test_dataset = datasets.MNIST(root="./mnist_data", train=False, download=True, transform=None)
+    return ADDataset(cifar_dataset=cifar_test_dataset, mnist_dataset=mnist_test_dataset)

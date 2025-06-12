@@ -5,8 +5,7 @@ from sklearn.manifold import TSNE
 import torch
 import numpy as np
 from sklearn.metrics import roc_curve, roc_auc_score
-
-
+import torchvision.transforms as T
 
 def q1_plot_figs(objectives, test_loss_per_epoch, figs_dir):
     var_loss_batch = [v.item() if torch.is_tensor(v) else v for v, _, _ in objectives]
@@ -151,4 +150,29 @@ def plot_roc_curve(scores_q1, scores_q5, q1_labels, q5_labels, figs_dir):
     # Save figure
     os.makedirs(figs_dir, exist_ok=True)
     plt.savefig(os.path.join(figs_dir, "ad_q2.png"))
+    plt.close()
+
+def plot_q3_ad(q1_most_anom, q5_most_anom, test_X, figs_dir):
+    fig, axes = plt.subplots(2, 7, figsize=(14, 4))
+
+    # Plot top 7 anomalies from Q1
+    for col, idx in enumerate(q1_most_anom[:7]):
+        img, _ = test_X[idx]  # img is already a PIL image
+        axes[0, col].imshow(img)
+        axes[0, col].axis('off')
+        axes[0, col].set_title(f"#{idx}")
+
+    # Plot top 7 anomalies from Q5
+    for col, idx in enumerate(q5_most_anom[:7]):
+        img, _ = test_X[idx]
+        axes[1, col].imshow(img)
+        axes[1, col].axis('off')
+        axes[1, col].set_title(f"#{idx}")
+
+    axes[0, 0].set_ylabel("Q1", fontsize=12)
+    axes[1, 0].set_ylabel("Q5", fontsize=12)
+
+    plt.tight_layout()
+    os.makedirs(figs_dir, exist_ok=True)
+    plt.savefig(os.path.join(figs_dir, "ad_q3.png"))
     plt.close()
