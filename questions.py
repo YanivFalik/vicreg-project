@@ -116,7 +116,7 @@ def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoad
 # here train_X will have the test transform (no need the train aug because encoder already trained)
 def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: str, figs_dir: str, debug: bool, q=1):
     # for training the classifier limited number of epochs is also good 
-    epochs = 5
+    epochs = 10
     if (q == 1):
         num_classes = len(train_X.dataset.base_dataset.classes)
     else: 
@@ -232,7 +232,7 @@ def main(debug: bool):
 
 
     # AD Part 
-    # q1_q2_ad(params_dir, figs_dir, debug)
+    q1_q2_ad(params_dir, figs_dir, debug)
 
 if __name__ == "__main__":
     main(debug=True)
