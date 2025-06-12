@@ -228,7 +228,7 @@ def main(debug: bool):
     # q3(e, train_X_test_transform, test_X, params_dir, figs_dir, debug=False)
     
     # q4(train_X, test_X, train_X_test_transform, debug, params_dir, figs_dir)
-    q5(e, params_dir, figs_dir, debug)
+    # q5(e, params_dir, figs_dir, debug)
     # q7(params_dir, figs_dir, debug)
 
 
