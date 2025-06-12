@@ -133,9 +133,12 @@ def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: st
     test_acc_per_epoch = []
     for e in range(1, epochs + 1):
         probe.train()
-        for _, (X_aug1, _, labels) in tqdm(enumerate(train_X)):
+        for _, (X_aug1, q5_labels, q1_labels) in tqdm(enumerate(train_X)):
             X_aug1 = X_aug1.to(device)
-            labels = labels.to(device)
+            if (q==1):     
+                labels = q1_labels.to(device)
+            else: 
+                labels = q5_labels.to(device)
 
             with torch.no_grad():
                 encoded = encoder(X_aug1)
