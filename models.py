@@ -70,7 +70,7 @@ def test_loss(e: Encoder, p: Projector, test_X: DataLoader, epoch_num: int, devi
             print(f"Epoch {epoch_num:02d} | Loss: {test_loss_per_sample:.4f}")
             return 
 
-def probe_test_acc(encoder: Encoder, probe: LinearProbe, test_X: DataLoader, device, e):
+def probe_test_acc(encoder: Encoder, probe: LinearProbe, test_X: DataLoader, device, e, q=1):
     encoder.eval()
     probe.eval()
 
@@ -80,7 +80,11 @@ def probe_test_acc(encoder: Encoder, probe: LinearProbe, test_X: DataLoader, dev
     total_loss = 0
 
     with torch.no_grad():
-        for _, (x, _, labels) in enumerate(test_X):
+        for _, (x, q5_labels, q1_labels) in enumerate(test_X):
+            if (q == 1):
+                labels = q1_labels
+            else: 
+                labels = q5_labels
             x = x.to(device)
             labels = labels.to(device)
             logits = probe(encoder(x))
