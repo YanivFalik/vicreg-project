@@ -159,18 +159,17 @@ def q2(e: Encoder, test_X: DataLoader, figs_dir: str, q=1):
             y1 = e.encode(X_aug1).detach().cpu()
             y2 = e.encode(X_aug2).detach().cpu()
             all_encodings.append(y1)
-            all_encodings.append(y2) 
+            all_encodings.append(y2)
+            label = label.cpu()
+            all_labels.append(label)
+            all_labels.append(label) 
         else:
             X_aug1 = X_aug1.to(device)
             y1 = e.encode(X_aug1).detach().cpu()
             all_encodings.append(y1)
+            label = X_aug2.cpu()
+            all_labels.append(label)
 
-        # all labels will have 2 copies of the encoding of the same batch (aug1, aug2) 
-        # therefore each label batch should have 2 copies 2 
-        label = label.cpu()
-        all_labels.append(label)
-        all_labels.append(label)
-    
     encoding_tensor = torch.cat(all_encodings, dim=0)  
     labels_tensor = torch.cat(all_labels, dim=0)     
     q2_plot_figs(encoding_tensor, labels_tensor, figs_dir, q)
