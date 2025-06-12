@@ -81,7 +81,6 @@ def q5(encoder: Encoder, params_dir, figs_dir, debug):
             total_batch_loss.backward()
             optimizer.step()
     save_models(params_dir, encoder, projector, q=5)
-    q2(encoder, raw_test, figs_dir, q=5)
     q3(encoder, raw_train, raw_test, params_dir, figs_dir, debug, q=5)
 
 def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoader,debug: bool, params_dir: str, figs_dir: str):
@@ -118,8 +117,10 @@ def q4(train_X: DataLoader, test_X: DataLoader, train_X_test_transform: DataLoad
 def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: str, figs_dir: str, debug: bool, q=1):
     # for training the classifier limited number of epochs is also good 
     epochs = 5
-    
-    num_classes = len(train_X.dataset.base_dataset.classes)
+    if (q == 1):
+        num_classes = len(train_X.dataset.base_dataset.classes)
+    else: 
+        num_classes = len(train_X.dataset.classes)
     probe = LinearProbe(hp.encoded_dim, num_classes=num_classes).to(device)
     
     # optimizer should not optimize encoder params, only linear prob params
