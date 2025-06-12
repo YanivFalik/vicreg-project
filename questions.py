@@ -148,7 +148,7 @@ def q3(encoder: Encoder, train_X: DataLoader, test_X: DataLoader, params_dir: st
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        test_acc_per_epoch.append(probe_test_acc(encoder, probe, test_X, device, e))
+        test_acc_per_epoch.append(probe_test_acc(encoder, probe, test_X, device, e, q))
     save_linear_probe(params_dir, probe, q)
     q3_test_accuracy(test_acc_per_epoch, figs_dir, "test_accuracy.png", q)
 
